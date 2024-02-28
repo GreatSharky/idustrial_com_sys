@@ -11,6 +11,11 @@ def create_request(trs, unit_id, function, start_address, quantity, value):
     sa_bytes = start_address.to_bytes(2)
     if function in [1,3,4]:
         data = quantity.to_bytes(2)
+    elif function in [5]:
+        if value == 1:
+            data = b'\xff\x00'
+        else:
+            data = value.to_bytes(2)
     elif function in [15,16]:
         data = quantity.to_bytes(2) + value.to_bytes(2)
     else:
@@ -46,9 +51,234 @@ def wireshark1(response):
         if key != "Data": 
             output[key] = placeholder[i]
         else:
-            output[key] = [placeholder[i]]
+            output[key] = placeholder[i]
     
-    return output
+    for key in output:
+        if type(output[key]) == int:
+            print(f"{key} : {output[key]}")
+        elif type(output[key]) == bytes:
+            if key == "Data":
+                n = 0
+                for byte in output[key]:
+                    for i in range(8):
+                        bit = (byte >> i) & 1
+                        print(f"{n} : {bit}")
+                        n += 1
+            else:
+                print("{} : {}".format(key, int.from_bytes(output[key], "big")))
+
+def wireshark2(response):
+    placeholder = []
+    output = {
+        'Transaction Identifier': 0,
+        'Protocol Identifier': 0,
+        'Length': 0, 
+        'Unit Identifier': 0, 
+        'Function Code': 1, 
+        'Byte Count': 0, 
+        'Data': []
+    }
+    for i, byt in enumerate(response):
+        if i % 2 == 0  and i != 6 and i != 8:
+            placeholder.append(response[i:i+2])
+        elif i == 6:
+            placeholder.append(response[i])
+        elif i == 7:
+            placeholder.append(response[i])
+        elif i == 8:
+            placeholder.append(response[i])
+        elif i == 9:
+            placeholder.append(response[i:])
+
+    for i, key in enumerate(output):
+        if key != "Data": 
+            output[key] = placeholder[i]
+        else:
+            output[key] = placeholder[i]
+    
+    for key in output:
+        if type(output[key]) == int:
+            print(f"{key} : {output[key]}")
+        elif type(output[key]) == bytes:
+            if key == "Data":
+                for byte in output[key]:
+                    print(f"Coil : {byte}")
+            else:
+                print("{} : {}".format(key, int.from_bytes(output[key], "big")))
+
+def wireshark3(response):
+    placeholder = []
+    output = {
+        'Transaction Identifier': 0,
+        'Protocol Identifier': 0,
+        'Length': 0, 
+        'Unit Identifier': 0, 
+        'Function Code': 1, 
+        'Byte Count': 0, 
+        'Data': []
+    }
+    for i, byt in enumerate(response):
+        if i % 2 == 0  and i != 6 and i != 8:
+            placeholder.append(response[i:i+2])
+        elif i == 6:
+            placeholder.append(response[i])
+        elif i == 7:
+            placeholder.append(response[i])
+        elif i == 8:
+            placeholder.append(response[i])
+        elif i == 9:
+            placeholder.append(response[i:])
+            break
+
+    for i, key in enumerate(output):
+        if key != "Data": 
+            output[key] = placeholder[i]
+        else:
+            output[key] = placeholder[i]
+    
+    for key in output:
+        if type(output[key]) == int:
+            print(f"{key} : {output[key]}")
+        elif type(output[key]) == bytes:
+            if key == "Data":
+                byte_array = output[key]
+                n = 0
+                for i in range(0, len(byte_array), 2):
+                    # Combine the high byte and the low byte to form the integer
+                    high_byte = byte_array[i]
+                    low_byte = byte_array[i + 1]
+                    integer_value = (high_byte << 8) | low_byte
+                    print(f"Register {n} : {integer_value}")
+                    n += 1
+
+            else:
+                print("{} : {}".format(key, int.from_bytes(output[key], "big")))
+
+def wireshark4(response):
+    placeholder = []
+    output = {
+        'Transaction Identifier': 0,
+        'Protocol Identifier': 0,
+        'Length': 0, 
+        'Unit Identifier': 0, 
+        'Function Code': 1, 
+        'Byte Count': 0, 
+        'Data': []
+    }
+    for i, byt in enumerate(response):
+        if i % 2 == 0  and i != 6 and i != 8:
+            placeholder.append(response[i:i+2])
+        elif i == 6:
+            placeholder.append(response[i])
+        elif i == 7:
+            placeholder.append(response[i])
+        elif i == 8:
+            placeholder.append(response[i])
+        elif i == 9:
+            placeholder.append(response[i:])
+            break
+
+    for i, key in enumerate(output):
+        if key != "Data": 
+            output[key] = placeholder[i]
+        else:
+            output[key] = placeholder[i]
+    
+    for key in output:
+        if type(output[key]) == int:
+            print(f"{key} : {output[key]}")
+        elif type(output[key]) == bytes:
+            if key == "Data":
+                byte_array = output[key]
+                n = 0
+                for i in range(0, len(byte_array), 2):
+                    # Combine the high byte and the low byte to form the integer
+                    high_byte = byte_array[i]
+                    low_byte = byte_array[i + 1]
+                    integer_value = (high_byte << 8) | low_byte
+                    print(f"Register {n} : {integer_value}")
+                    n += 1
+
+            else:
+                print("{} : {}".format(key, int.from_bytes(output[key], "big")))
+
+def wireshark5(response):
+    placeholder = []
+    output = {
+        'Transaction Identifier': 0,
+        'Protocol Identifier': 0,
+        'Length': 0, 
+        'Unit Identifier': 0, 
+        'Function Code': 1, 
+
+    }
+    for i, byt in enumerate(response):
+        if i % 2 == 0  and i != 6 and i != 8:
+            placeholder.append(response[i:i+2])
+        elif i == 6:
+            placeholder.append(response[i])
+        elif i == 7:
+            placeholder.append(response[i])
+        elif i == 8:
+            placeholder.append(response[i])
+        elif i == 9:
+            placeholder.append(response[i:])
+            break
+
+    for i, key in enumerate(output):
+        if key != "Data": 
+            output[key] = placeholder[i]
+        else:
+            output[key] = placeholder[i]
+    
+    for key in output:
+        if type(output[key]) == int:
+            print(f"{key} : {output[key]}")
+        elif type(output[key]) == bytes:
+            if key == "Data":
+                byte_array = output[key]
+
+
+            else:
+                print("{} : {}".format(key, int.from_bytes(output[key], "big")))
+
+def wireshark6(response):
+    placeholder = []
+    output = {
+        'Transaction Identifier': 0,
+        'Protocol Identifier': 0,
+        'Length': 0, 
+        'Unit Identifier': 0, 
+        'Function Code': 1, 
+        'Data': []
+    }
+    for i, byt in enumerate(response):
+        if i % 2 == 0  and i != 6 and i != 8:
+            placeholder.append(response[i:i+2])
+        elif i == 6:
+            placeholder.append(response[i])
+        elif i == 7:
+            placeholder.append(response[i])
+        elif i == 8:
+            placeholder.append(response[i:])
+
+
+    for i, key in enumerate(output):
+        if key != "Data": 
+            output[key] = placeholder[i]
+        else:
+            output[key] = placeholder[i]
+    
+    for key in output:
+        if type(output[key]) == int:
+            print(f"{key} : {output[key]}")
+        elif type(output[key]) == bytes:
+            if key == "Data":
+                print("Data : {}".format(int.from_bytes(output[key], byteorder="big")))
+
+
+            else:
+                print("{} : {}".format(key, int.from_bytes(output[key], "big")))
 
 def analysis(output):
     print(output)
@@ -56,19 +286,27 @@ def analysis(output):
         if type(output[key]) == int:
             print("{} : {}".format(key, output[key]))
         elif type(output[key]) == bytes:
-            print("{} : {}".format(key, int.from_bytes(output[key], "big")))
+            if key == "Data":
+                for j in range(8):
+                    bit = (output[key] >> j) & 1
+                    print(bit, end=" ")
+            else:
+                print("{} : {}".format(key, int.from_bytes(output[key], "big")))
         else:
             if output["Function Code"] != 1:
                 for i, byt in enumerate(output[key]):
                     print("Register value {} = {}".format(i, int.from_bytes(byt, "big")))
             else:
                 for i in output["Data"]:
-                    print("Register value {} = {}".format("liiba", i))
+                    for j in range(8):
+                        bit = (i >> j) & 1
+                        print(bit, end=" ")
+
 
 
 
 def main():
-    tx = 2
+    tx = 68
     id = 1
     function_code = input("Provide Function Code: ")
     print("Selected code: ", function_code)
@@ -93,6 +331,17 @@ def main():
     print("Response", res)
     if res[7] == 1:
         output = wireshark1(res)
-    analysis(output)
+    elif res[7] == 2:
+        output = wireshark2(res)
+    elif res[7] == 3:
+        output = wireshark3(res)
+    elif res[7] == 4:
+        output = wireshark4(res)
+    elif res[7] == 5:
+        wireshark5(res)
+    elif res[7] == 6:
+        wireshark6(res)
+
+    #analysis(output)
 
 main()
