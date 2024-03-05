@@ -17,7 +17,12 @@ def create_request(trs, unit_id, function, start_address, quantity, value):
         else:
             data = value.to_bytes(2)
     elif function in [15,16]:
-        data = quantity.to_bytes(2) + value.to_bytes(2)
+        if function in [16]:
+            val_bytes = b''
+            for i in range(quantity):
+                val_bytes += value.to_bytes(2)
+            byt_count = len(val_bytes).to_bytes()
+            data = quantity.to_bytes(2) + byt_count + val_bytes
     else:
         data = value.to_bytes(2)
     pdu = fc_bytes + sa_bytes + data + id_bytes
@@ -280,6 +285,42 @@ def wireshark6(response):
             else:
                 print("{} : {}".format(key, int.from_bytes(output[key], "big")))
 
+def wireshark16(response):
+    placeholder = []
+    output = {
+        'Transaction Identifier': 0,
+        'Protocol Identifier': 0,
+        'Length': 0, 
+        'Unit Identifier': 0, 
+        'Function Code': 1,
+        'Refrence number' : 0, 
+        'Word count': []
+    }
+    for i, byt in enumerate(response):
+        if i % 2 == 0  and i != 6:
+            placeholder.append(response[i:i+2])
+        elif i == 6:
+            placeholder.append(response[i])
+        elif i == 7:
+            placeholder.append(response[i])
+        elif i == 8:
+            placeholder.append(response[i:i+2])
+
+
+    for i, key in enumerate(output):
+        output[key] = placeholder[i]
+    
+    for key in output:
+        if type(output[key]) == int:
+            print(f"{key} : {output[key]}")
+        elif type(output[key]) == bytes:
+            if key == "Data":
+                print("Data : {}".format(int.from_bytes(output[key], byteorder="big")))
+
+
+            else:
+                print("{} : {}".format(key, int.from_bytes(output[key], "big")))
+
 def analysis(output):
     print(output)
     for key in output:
@@ -341,6 +382,8 @@ def main():
         wireshark5(res)
     elif res[7] == 6:
         wireshark6(res)
+    elif res[7] == 16:
+        wireshark16(res)
 
     #analysis(output)
 
