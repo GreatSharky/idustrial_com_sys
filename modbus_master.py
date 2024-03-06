@@ -1,4 +1,5 @@
 import socket
+import math
 
 ip = "127.0.0.1"
 port = 502
@@ -17,12 +18,38 @@ def create_request(trs, unit_id, function, start_address, quantity, value):
         else:
             data = value.to_bytes(2)
     elif function in [15,16]:
-        data = quantity.to_bytes(2) + value.to_bytes(2)
+        if function in [15]:
+ #           for i in range(quantity):
+  #              byte_value |= (value << i)
+   #         byte_length = math.ceil(quantity/8)
+    #        byte_value <<= (byte_length-quantity)
+     #       data = quantity.to_bytes(2) + len(byte_value.to_bytes(int(byte_length/8))).to_bytes() + byte_value.to_bytes(int(byte_length/8))
+            byt_needed = math.ceil(quantity/8)
+            bit_needed = byt_needed*8
+            n = quantity
+            val_bytes = b''
+            for i in range(byt_needed):
+                if n >= 8:
+                    bin_str = str(value) * 8
+                    n -= 8
+                else:
+                    bin_str = "0" * (8-n) + str(value) * n
+                byt = int(bin_str, 2).to_bytes(1, byteorder='big')
+                val_bytes += byt
+            data = quantity.to_bytes(2) + len(val_bytes).to_bytes() + val_bytes
+        else:
+            data = quantity.to_bytes(2) + value.to_bytes(2)
     else:
         data = value.to_bytes(2)
     pdu = fc_bytes + sa_bytes + data + id_bytes
     length_bytes = len(pdu).to_bytes(2)
     return trans_bytes + prot_bytes +length_bytes + id_bytes + fc_bytes + sa_bytes + data
+
+def create_byte_from_inputs(inputs, value):
+    byte_value = 0
+    for i in range(inputs):
+        byte_value |= (value << i)
+    return byte_value
 
 def wireshark1(response):
     placeholder = []
@@ -280,6 +307,43 @@ def wireshark6(response):
             else:
                 print("{} : {}".format(key, int.from_bytes(output[key], "big")))
 
+def wireshark15(response):
+    placeholder = []
+    output = {
+        'Transaction Identifier': 0,
+        'Protocol Identifier': 0,
+        'Length': 0, 
+        'Unit Identifier': 0, 
+        'Function Code': 1, 
+        'Reference': 0, 
+        'Bit count': 0
+    }
+    for i, byt in enumerate(response):
+        if i % 2 == 0  and i != 6:
+            placeholder.append(response[i:i+2])
+        elif i == 6:
+            placeholder.append(response[i])
+        elif i == 7:
+            placeholder.append(response[i])
+
+
+    for i, key in enumerate(output):
+        output[key] = placeholder[i]
+    
+    for key in output:
+        if type(output[key]) == int:
+            print(f"{key} : {output[key]}")
+        elif type(output[key]) == bytes:
+            if key == "Data":
+                n = 0
+                for byte in output[key]:
+                    for i in range(8):
+                        bit = (byte >> i) & 1
+                        print(f"{n} : {bit}")
+                        n += 1
+            else:
+                print("{} : {}".format(key, int.from_bytes(output[key], "big")))
+
 def analysis(output):
     print(output)
     for key in output:
@@ -301,8 +365,6 @@ def analysis(output):
                     for j in range(8):
                         bit = (i >> j) & 1
                         print(bit, end=" ")
-
-
 
 
 def main():
@@ -341,6 +403,8 @@ def main():
         wireshark5(res)
     elif res[7] == 6:
         wireshark6(res)
+    elif res[7] == 15:
+        wireshark15(res)
 
     #analysis(output)
 
